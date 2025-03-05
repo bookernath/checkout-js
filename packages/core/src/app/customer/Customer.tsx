@@ -56,6 +56,7 @@ export interface CustomerProps {
     onSignInError?(error: Error): void;
     onUnhandledError?(error: Error): void;
     onWalletButtonClick?(methodName: string): void;
+    onLoginStateChange?(state: string): void;
 }
 
 export interface WithCheckoutCustomerProps {
@@ -151,6 +152,16 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
             await deinitializeCustomer({ methodId: providerWithCustomCheckout });
         } catch (error) {
             onUnhandledError(error);
+        }
+    }
+
+    componentDidUpdate(prevProps: CustomerProps & WithCheckoutCustomerProps & AnalyticsContextProps): void {
+        // Check if the user was previously signed in but is now signed out
+        const wasSignedIn = !prevProps.isInitializing && !prevProps.isCreatingAccount && !prevProps.isContinuingAsGuest;
+        const isSignedIn = !this.props.isInitializing && !this.props.isCreatingAccount && !this.props.isContinuingAsGuest;
+        
+        if (wasSignedIn && !isSignedIn) {
+            this.trackLoginStateChange('signed_out');
         }
     }
 
@@ -425,6 +436,7 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
             }
 
             await this.executePaymentMethodCheckoutOrContinue();
+            this.trackLoginStateChange('guest_checkout');
 
             this.draftEmail = undefined;
         } catch (error) {
@@ -436,6 +448,7 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
                 this.draftEmail = undefined;
 
                 onContinueAsGuest();
+                this.trackLoginStateChange('guest_checkout');
             }
 
             if (isErrorWithType(error) && error.status === 429) {
@@ -463,6 +476,7 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
             await signIn(credentials);
 
             onSignIn();
+            this.trackLoginStateChange('signed_in');
 
             this.draftEmail = undefined;
         } catch (error) {
@@ -479,6 +493,7 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
         await createAccount(mapCreateAccountFromFormValues(values));
 
         onAccountCreated();
+        this.trackLoginStateChange('account_created');
     };
 
     private showCreateAccount: () => void = () => {
@@ -543,6 +558,16 @@ class Customer extends Component<CustomerProps & WithCheckoutCustomerProps & Ana
 
         analyticsTracker.customerPaymentMethodExecuted(payload);
     }
+
+    private trackLoginStateChange: (state: string) => void = (state) => {
+        const { onLoginStateChange = noop } = this.props;
+        
+        // For now, just alert the state change
+        alert(`Login state changed: ${state}`);
+        
+        // Call the prop callback if provided
+        onLoginStateChange(state);
+    };
 }
 
 export function mapToWithCheckoutCustomerProps({
