@@ -11,3 +11,12 @@ export {
 } from './getPasswordRequirements';
 export { SUPPORTED_METHODS } from './getSupportedMethods';
 export { default as CheckoutButtonContainer } from './CheckoutButtonContainer';
+export { FastCustomerStep, FastCustomerStepProps } from './FastCustomerStep';
+export {
+    preloadCustomerState,
+    getOptimalStartingStep,
+    canBypassCustomerStep,
+    getNextStepToPreload,
+    type CustomerPreloadState,
+    type PreloadedCustomer
+} from './CustomerPreloader';
