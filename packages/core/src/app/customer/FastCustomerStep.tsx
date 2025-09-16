@@ -1,10 +1,9 @@
-import React, { Component, useMemo, useCallback, useRef, useEffect } from 'react';
+import React, { useMemo, useCallback, useRef, useEffect, useState } from 'react';
 import { TranslatedString } from '@bigcommerce/checkout/locale';
 import { Button, ButtonVariant } from '../ui/button';
-import { FormField, TextInput } from '../ui/form';
+import { TextInput } from '../ui/form';
 
-import { preloadCustomerState, type CustomerPreloadState, canBypassCustomerStep } from './CustomerPreloader';
-import CheckoutStepType from '../checkout/CheckoutStepType';
+import { preloadCustomerState, type CustomerPreloadState } from './CustomerPreloader';
 
 export interface FastCustomerStepProps {
     onContinueAsGuest?: (email: string) => void;
@@ -67,8 +66,8 @@ const FastGuestEmail: React.FC<FastGuestEmailProps> = ({
     onShowFullCustomerForm,
     isFloatingLabelEnabled
 }) => {
-    const [email, setEmail] = React.useState('');
-    const [isValid, setIsValid] = React.useState(false);
+    const [email, setEmail] = useState('');
+    const [isValid, setIsValid] = useState(false);
     const emailInputRef = useRef<HTMLInputElement>(null);
 
     // Auto-focus email field for immediate interaction
